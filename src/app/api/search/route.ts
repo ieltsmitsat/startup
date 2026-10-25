@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { isDbAvailable, markDbOffline } from "@/lib/dbCheck";
 import { INITIAL_UNIVERSITIES } from "@/lib/seed-data";
-import { MOCK_STUDY_MATERIALS } from "@/app/api/study/materials/route";
+import { getPublicApprovedMaterials } from "@/lib/materialsStore";
 
 export const dynamic = "force-dynamic";
 
@@ -80,13 +80,8 @@ export async function GET(req: Request) {
       }
     }
 
-    // Fast In-Memory Fallback
-    const materials = MOCK_STUDY_MATERIALS.filter(
-      (m) =>
-        m.title.toLowerCase().includes(qLower) ||
-        m.description.toLowerCase().includes(qLower) ||
-        m.teacherName?.toLowerCase().includes(qLower)
-    ).slice(0, 5);
+    // Fast In-Memory Fallback from Unified Store
+    const materials = getPublicApprovedMaterials({ search: query }).slice(0, 5);
 
     const universities = INITIAL_UNIVERSITIES.filter((u) =>
       u.name.toLowerCase().includes(qLower)

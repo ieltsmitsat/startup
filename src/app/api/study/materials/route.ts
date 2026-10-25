@@ -4,6 +4,14 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { MaterialType } from "@prisma/client";
 import { isDbAvailable, markDbOffline } from "@/lib/dbCheck";
+import {
+  getPublicApprovedMaterials,
+  addMaterialToStore,
+  getAllMaterials,
+  INITIAL_MATERIALS,
+} from "@/lib/materialsStore";
+
+export const MOCK_STUDY_MATERIALS = INITIAL_MATERIALS;
 
 export const dynamic = "force-dynamic";
 
@@ -19,174 +27,6 @@ const createMaterialSchema = z.object({
   academicYear: z.number().int().min(1).max(6).optional(),
   subjectId: z.string().min(1, "Fan tanlanishi shart"),
 });
-
-export const MOCK_STUDY_MATERIALS = [
-  {
-    id: "mat-1",
-    title: "Algoritmlar va ma'lumotlar tuzilmasi - Ma'ruzalar matni",
-    description: "TATU Dasturiy injiniring fakulteti 2-kurs talabalari uchun saralash, qidiruv va daraxtlar bo'yicha to'liq ma'ruza.",
-    materialType: "LECTURE",
-    fileUrl: "/uploads/mock-algo.pdf",
-    fileName: "Algorithms_Lectures_TATU.pdf",
-    fileSize: 4200000,
-    fileType: "pdf",
-    teacherName: "Prof. S. Rahmatov",
-    academicYear: 2,
-    downloadsCount: 148,
-    viewsCount: 620,
-    status: "APPROVED",
-    avgRating: 4.9,
-    reviewsCount: 18,
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-    subject: {
-      id: "sub-1",
-      name: "Algoritmlar va ma'lumotlar tuzilmasi",
-      faculty: {
-        id: "fac-1",
-        name: "Dasturiy injiniring",
-        university: { id: "uni-tatu", name: "TATU" },
-      },
-    },
-    author: {
-      id: "usr-1",
-      name: "Jamshid Qodirov",
-      isVerified: true,
-      avatarUrl: null,
-    },
-  },
-  {
-    id: "mat-2",
-    title: "Sun'iy intellekt va neyron tarmoqlar - Oraliq nazorat savollari",
-    description: "O'zMU Amaliy matematika fakulteti uchun 40 ta nazorat savollari va qisqacha javoblar konspekti.",
-    materialType: "EXAM_QUESTIONS",
-    fileUrl: "/uploads/mock-ai-exam.pdf",
-    fileName: "AI_Exam_Questions_OzMU.pdf",
-    fileSize: 2100000,
-    fileType: "pdf",
-    teacherName: "Akademik X. Nurmatov",
-    academicYear: 4,
-    downloadsCount: 95,
-    viewsCount: 380,
-    status: "APPROVED",
-    avgRating: 4.8,
-    reviewsCount: 12,
-    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-    subject: {
-      id: "sub-2",
-      name: "Mashinali o'rganish (Machine Learning)",
-      faculty: {
-        id: "fac-2",
-        name: "Amaliy matematika",
-        university: { id: "uni-ozmu", name: "O'zMU" },
-      },
-    },
-    author: {
-      id: "usr-2",
-      name: "Zuhra Yusupova",
-      isVerified: true,
-      avatarUrl: null,
-    },
-  },
-  {
-    id: "mat-3",
-    title: "Web dasturlash (React & Next.js) - Taqdimot slaydlari",
-    description: "Zamonaviy veb-ishlab chiqish, komponentlar arxitekturasi, server components va SSR bo'yicha slaydlar to'plami.",
-    materialType: "SLIDES",
-    fileUrl: "/uploads/mock-web.pptx",
-    fileName: "Nextjs_Architecture_Slides.pptx",
-    fileSize: 8400000,
-    fileType: "pptx",
-    teacherName: "Katta o'qituvchi B. Saidov",
-    academicYear: 3,
-    downloadsCount: 215,
-    viewsCount: 890,
-    status: "APPROVED",
-    avgRating: 5.0,
-    reviewsCount: 26,
-    createdAt: new Date(Date.now() - 86400000 * 8).toISOString(),
-    subject: {
-      id: "sub-3",
-      name: "Web dasturlash (React & Next.js)",
-      faculty: {
-        id: "fac-1",
-        name: "Dasturiy injiniring",
-        university: { id: "uni-tatu", name: "TATU" },
-      },
-    },
-    author: {
-      id: "usr-3",
-      name: "Farrux Muxtorov",
-      isVerified: true,
-      avatarUrl: null,
-    },
-  },
-  {
-    id: "mat-4",
-    title: "Kriptografiya asoslari - 1-5 laboratoriya ishlari bo'yicha ko'rsatma",
-    description: "Simmetrik va asimmetrik shifrlash (RSA, AES) algoritmlarini amalda qo'llash bo'yicha laboratoriya metodik qo'llanmasi.",
-    materialType: "LAB_WORK",
-    fileUrl: "/uploads/mock-crypto-lab.pdf",
-    fileName: "Crypto_Lab_Guide.pdf",
-    fileSize: 3600000,
-    fileType: "pdf",
-    teacherName: "Dots. A. Karimov",
-    academicYear: 3,
-    downloadsCount: 160,
-    viewsCount: 510,
-    status: "APPROVED",
-    avgRating: 4.7,
-    reviewsCount: 15,
-    createdAt: new Date(Date.now() - 86400000 * 12).toISOString(),
-    subject: {
-      id: "sub-4",
-      name: "Kriptografiya asoslari",
-      faculty: {
-        id: "fac-3",
-        name: "Kiberxavfsizlik",
-        university: { id: "uni-tatu", name: "TATU" },
-      },
-    },
-    author: {
-      id: "usr-4",
-      name: "Rustam Aliyev",
-      isVerified: true,
-      avatarUrl: null,
-    },
-  },
-  {
-    id: "mat-5",
-    title: "Oliy matematika 1-semestr testlar va yechimlar bazasi",
-    description: "ToshDTU muhandislik yo'nalishlari uchun differensial va integral hisob bo'yicha 200 ta test savollari va javoblar kaliti.",
-    materialType: "TESTS",
-    fileUrl: "/uploads/mock-math-tests.pdf",
-    fileName: "Math_Tests_Solutions.pdf",
-    fileSize: 5100000,
-    fileType: "pdf",
-    teacherName: "Dots. M. Saidov",
-    academicYear: 1,
-    downloadsCount: 310,
-    viewsCount: 1240,
-    status: "APPROVED",
-    avgRating: 4.9,
-    reviewsCount: 34,
-    createdAt: new Date(Date.now() - 86400000 * 16).toISOString(),
-    subject: {
-      id: "sub-5",
-      name: "Oliy matematika",
-      faculty: {
-        id: "fac-4",
-        name: "Mashinasozlik",
-        university: { id: "uni-toshdtu", name: "ToshDTU" },
-      },
-    },
-    author: {
-      id: "usr-5",
-      name: "Doniyor Yoqubov",
-      isVerified: true,
-      avatarUrl: null,
-    },
-  },
-];
 
 export async function GET(req: Request) {
   try {
@@ -231,7 +71,7 @@ export async function GET(req: Request) {
           orderBy = { downloadsCount: "desc" };
         }
 
-        const materials = await prisma.studyMaterial.findMany({
+        const dbMaterials = await prisma.studyMaterial.findMany({
           where,
           orderBy,
           include: {
@@ -251,8 +91,8 @@ export async function GET(req: Request) {
           },
         });
 
-        if (materials && materials.length > 0) {
-          const materialsWithRating = materials.map((m) => {
+        if (dbMaterials && dbMaterials.length > 0) {
+          const materialsWithRating = dbMaterials.map((m) => {
             const avgRating =
               m.reviews.length > 0
                 ? m.reviews.reduce((acc, r) => acc + r.rating, 0) / m.reviews.length
@@ -271,41 +111,20 @@ export async function GET(req: Request) {
       }
     }
 
-    // Fast In-Memory Fallback
-    let filtered = [...MOCK_STUDY_MATERIALS];
+    // Yagona Unified Store dan tasdiqlangan (APPROVED) barcha materiallarni olish (Admin qo'shganlari bilan birga!)
+    const approvedMaterials = getPublicApprovedMaterials({
+      search,
+      materialType,
+      universityId,
+      sortBy,
+    });
 
-    if (search) {
-      filtered = filtered.filter(
-        (m) =>
-          m.title.toLowerCase().includes(search) ||
-          m.description.toLowerCase().includes(search) ||
-          m.teacherName?.toLowerCase().includes(search) ||
-          m.subject.name.toLowerCase().includes(search)
-      );
-    }
-
-    if (materialType) {
-      filtered = filtered.filter((m) => m.materialType === materialType);
-    }
-
-    if (universityId) {
-      filtered = filtered.filter(
-        (m) => m.subject.faculty.university.id === universityId || m.subject.faculty.university.name.toLowerCase().includes(universityId.toLowerCase())
-      );
-    }
-
-    if (sortBy === "popular") {
-      filtered.sort((a, b) => b.viewsCount - a.viewsCount);
-    } else if (sortBy === "downloads") {
-      filtered.sort((a, b) => b.downloadsCount - a.downloadsCount);
-    } else {
-      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-
-    return NextResponse.json({ materials: filtered });
+    return NextResponse.json({ materials: approvedMaterials });
   } catch (error) {
     console.error("Study materials fetch error:", error);
-    return NextResponse.json({ materials: MOCK_STUDY_MATERIALS });
+    return NextResponse.json({
+      materials: getPublicApprovedMaterials({}),
+    });
   }
 }
 
@@ -358,47 +177,26 @@ export async function POST(req: Request) {
       }
     }
 
-    // In-Memory fallback creation
-    const newMock = {
-      id: `mat-${Date.now()}`,
+    // Store ga qo'shish
+    const newMaterial = addMaterialToStore({
       title: validatedData.title,
-      description: validatedData.description || "",
-      materialType: validatedData.materialType,
+      description: validatedData.description,
+      type: validatedData.materialType,
       fileUrl: validatedData.fileUrl,
       fileName: validatedData.fileName,
-      fileSize: validatedData.fileSize,
-      fileType: validatedData.fileType.toLowerCase(),
-      teacherName: validatedData.teacherName || "O'qituvchi",
-      academicYear: validatedData.academicYear || 1,
-      downloadsCount: 0,
-      viewsCount: 1,
+      fileSizeMb: Number((validatedData.fileSize / (1024 * 1024)).toFixed(1)),
+      teacherName: validatedData.teacherName,
+      academicYear: validatedData.academicYear,
+      subjectName: "Tanlangan Fan",
+      universityName: "TATU",
       status: "APPROVED",
-      avgRating: 5.0,
-      reviewsCount: 1,
-      createdAt: new Date().toISOString(),
-      subject: {
-        id: validatedData.subjectId,
-        name: "Tanlangan Fan",
-        faculty: {
-          id: "fac-general",
-          name: "Fakultet",
-          university: { id: "uni-general", name: "OTM" },
-        },
-      },
-      author: {
-        id: user.id,
-        name: user.name || "Administrator",
-        isVerified: true,
-        avatarUrl: null,
-      },
-    };
-
-    MOCK_STUDY_MATERIALS.unshift(newMock);
+      uploaderName: user.name || "Administrator",
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Material muvaffaqiyatli yuklandi",
-      material: newMock,
+      message: "Material muvaffaqiyatli yuklandi va ommaga chiqarildi",
+      material: newMaterial,
     });
   } catch (error: any) {
     if (error instanceof z.ZodError) {

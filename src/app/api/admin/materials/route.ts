@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { isDbAvailable, markDbOffline } from "@/lib/dbCheck";
+import {
+  getAdminMaterialsFormatted,
+  addMaterialToStore,
+  updateMaterialStatusInStore,
+  updateMaterialDataInStore,
+  deleteMaterialFromStore,
+} from "@/lib/materialsStore";
 
 export interface AdminMaterialItem {
   id: string;
@@ -19,99 +26,6 @@ export interface AdminMaterialItem {
   createdAt: string;
 }
 
-let MOCK_ADMIN_MATERIALS: AdminMaterialItem[] = [
-  {
-    id: "mat-mod-1",
-    title: "Ma'lumotlar tuzilmasi va algoritmlar - 2026 Yakuniy imtihon testlari",
-    subjectName: "Ma'lumotlar tuzilmasi",
-    universityName: "TATU",
-    teacherName: "Prof. S. Rahmatov",
-    type: "TESTS",
-    status: "PENDING",
-    fileUrl: "/uploads/mock-exam.pdf",
-    fileSizeMb: 4.2,
-    uploaderName: "Jamshid Qodirov",
-    academicYear: 2,
-    rejectionReason: null,
-    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-  },
-  {
-    id: "mat-mod-2",
-    title: "Kiberxavfsizlik asoslari bo'yicha laboratoriya ishlari to'plami (Lab 1-6)",
-    subjectName: "Kiberxavfsizlik",
-    universityName: "INHA",
-    teacherName: "Dots. A. Karimov",
-    type: "LAB_WORK",
-    status: "PENDING",
-    fileUrl: "/uploads/cyber-lab.zip",
-    fileSizeMb: 12.8,
-    uploaderName: "Rustam Aliyev",
-    academicYear: 3,
-    rejectionReason: null,
-    createdAt: new Date(Date.now() - 3600000 * 7).toISOString(),
-  },
-  {
-    id: "mat-mod-3",
-    title: "Sun'iy intellekt va neyron tarmoqlar - Ma'ruzalar matni (PDF)",
-    subjectName: "Sun'iy intellekt",
-    universityName: "O'zMU",
-    teacherName: "Akademik X. Nurmatov",
-    type: "LECTURE",
-    status: "PENDING",
-    fileUrl: "/uploads/ai-lecture.pdf",
-    fileSizeMb: 8.5,
-    uploaderName: "Zuhra Yusupova",
-    academicYear: 4,
-    rejectionReason: null,
-    createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-  },
-  {
-    id: "mat-mod-4",
-    title: "Web dasturlash (Fullstack Next.js + Django) namunaviy kurs ishi",
-    subjectName: "Web dasturlash",
-    universityName: "TATU",
-    teacherName: "Katta o'qituvchi B. Saidov",
-    type: "OTHER",
-    status: "PENDING",
-    fileUrl: "/uploads/web-coursework.zip",
-    fileSizeMb: 24.1,
-    uploaderName: "Farrux Muxtorov",
-    academicYear: 3,
-    rejectionReason: null,
-    createdAt: new Date(Date.now() - 3600000 * 26).toISOString(),
-  },
-  {
-    id: "mat-mod-5",
-    title: "Oliy matematika 1-semestr to'liq yechimlari va formulalar",
-    subjectName: "Oliy matematika",
-    universityName: "ToshDTU",
-    teacherName: "Dots. M. Saidov",
-    type: "SLIDES",
-    status: "APPROVED",
-    fileUrl: "/uploads/math-solutions.pdf",
-    fileSizeMb: 5.1,
-    uploaderName: "Doniyor Yoqubov",
-    academicYear: 1,
-    rejectionReason: null,
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    id: "mat-mod-6",
-    title: "Iqtisodiy tahlil va ekonometrika oraliq nazorat savollari",
-    subjectName: "Iqtisodiy tahlil",
-    universityName: "TDIU",
-    teacherName: "Dots. F. Yo'ldoshev",
-    type: "EXAM_QUESTIONS",
-    status: "REJECTED",
-    fileUrl: "/uploads/bad-scan.pdf",
-    fileSizeMb: 1.8,
-    uploaderName: "Madina Karimova",
-    academicYear: 2,
-    rejectionReason: "Fayl skaneri juda xira va o'qib bo'lmaydi. Iltimos, aniq nusxasini qayta yuklang.",
-    createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
-  },
-];
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -120,7 +34,7 @@ export async function GET(req: Request) {
     const university = searchParams.get("university");
     const type = searchParams.get("type");
 
-    let materials = [...MOCK_ADMIN_MATERIALS];
+    let materials = getAdminMaterialsFormatted();
 
     if (await isDbAvailable()) {
       try {
@@ -165,6 +79,7 @@ export async function GET(req: Request) {
             fileSizeMb: Number(((m.fileSize || 2000000) / (1024 * 1024)).toFixed(1)),
             uploaderName: m.author?.name || "Talaba",
             academicYear: m.academicYear || 1,
+            rejectionReason: null,
             createdAt: m.createdAt.toISOString(),
           }));
         }
@@ -202,26 +117,24 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error("Admin materials GET error:", error);
-    return NextResponse.json({ materials: MOCK_ADMIN_MATERIALS });
+    return NextResponse.json({ materials: getAdminMaterialsFormatted() });
   }
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const {
-      title,
-      subjectName,
-      universityName,
-      teacherName,
-      type,
-      fileUrl,
-      fileName,
-      fileSizeMb,
-      academicYear,
-      description,
-      status,
-    } = body;
+    const title = body.title;
+    const subjectName = body.subjectName || body.subject;
+    const universityName = body.universityName || body.university;
+    const teacherName = body.teacherName || body.author || "Kafedra o'qituvchisi";
+    const type = body.type || body.materialType || "LECTURE";
+    const fileUrl = body.fileUrl || "/uploads/sample-material.pdf";
+    const fileName = body.fileName || (title ? `${String(title).replace(/\s+/g, "_")}.pdf` : "material.pdf");
+    const fileSizeMb = body.fileSizeMb ? Number(body.fileSizeMb) : 3.5;
+    const academicYear = body.academicYear ? Number(body.academicYear) : 1;
+    const description = body.description || "";
+    const status = body.status || "APPROVED";
 
     if (!title || !subjectName || !universityName) {
       return NextResponse.json(
@@ -230,82 +143,97 @@ export async function POST(req: Request) {
       );
     }
 
-    const newMaterial: AdminMaterialItem = {
-      id: "mat-mod-" + Date.now(),
+    // 1. Unified store ga qo'shish (bu orqali material BIR VAQTDA ham Admin panelda, ham /study da paydo bo'ladi!)
+    const unified = addMaterialToStore({
       title,
       subjectName,
       universityName,
       teacherName: teacherName || "Kafedra o'qituvchisi",
       type: type || "LECTURE",
-      status: status || "APPROVED",
       fileUrl: fileUrl || "/uploads/sample-material.pdf",
+      fileName: fileName || `${title.replace(/\s+/g, "_")}.pdf`,
       fileSizeMb: fileSizeMb ? Number(fileSizeMb) : 3.5,
-      uploaderName: "Admin (Rasmiy)",
       academicYear: academicYear ? Number(academicYear) : 1,
+      description,
+      status: status || "APPROVED",
+      uploaderName: "Admin (Rasmiy)",
+    });
+
+    const newMaterial: AdminMaterialItem = {
+      id: unified.id,
+      title: unified.title,
+      subjectName: unified.subject.name,
+      universityName: unified.subject.faculty.university.name,
+      teacherName: unified.teacherName,
+      type: unified.materialType,
+      status: unified.status,
+      fileUrl: unified.fileUrl,
+      fileSizeMb: unified.fileSizeMb,
+      uploaderName: unified.author.name,
+      academicYear: unified.academicYear,
       rejectionReason: null,
-      createdAt: new Date().toISOString(),
+      createdAt: unified.createdAt,
     };
 
-    // Prepend to mock materials so it shows at the top immediately
-    MOCK_ADMIN_MATERIALS.unshift(newMaterial);
-
-    // Try saving to Prisma DB if accessible
-    try {
-      let university = await prisma.university.findFirst({
-        where: { name: { contains: universityName, mode: "insensitive" } },
-      });
-      if (!university) {
-        university = await prisma.university.findFirst();
-      }
-
-      if (university) {
-        let faculty = await prisma.faculty.findFirst({
-          where: { universityId: university.id },
+    // 2. Agar DB mavjud bo'lsa, PostgreSQL ga ham saqlash
+    if (await isDbAvailable()) {
+      try {
+        let university = await prisma.university.findFirst({
+          where: { name: { contains: universityName, mode: "insensitive" } },
         });
+        if (!university) {
+          university = await prisma.university.findFirst();
+        }
 
-        if (faculty) {
-          let subject = await prisma.subject.findFirst({
-            where: { facultyId: faculty.id, name: { contains: subjectName, mode: "insensitive" } },
+        if (university) {
+          let faculty = await prisma.faculty.findFirst({
+            where: { universityId: university.id },
           });
 
-          if (!subject) {
-            subject = await prisma.subject.create({
-              data: {
-                name: subjectName,
-                facultyId: faculty.id,
-              },
+          if (faculty) {
+            let subject = await prisma.subject.findFirst({
+              where: { facultyId: faculty.id, name: { contains: subjectName, mode: "insensitive" } },
             });
-          }
 
-          let adminUser = await prisma.user.findFirst({
-            where: { role: "ADMIN" },
-          });
-          if (!adminUser) {
-            adminUser = await prisma.user.findFirst();
-          }
+            if (!subject) {
+              subject = await prisma.subject.create({
+                data: {
+                  name: subjectName,
+                  facultyId: faculty.id,
+                },
+              });
+            }
 
-          if (adminUser) {
-            await prisma.studyMaterial.create({
-              data: {
-                title,
-                description: description || null,
-                materialType: (type as any) || "LECTURE",
-                fileUrl: fileUrl || "/uploads/sample-material.pdf",
-                fileName: fileName || `${title.replace(/\s+/g, "_")}.pdf`,
-                fileSize: Math.round((fileSizeMb || 3.5) * 1024 * 1024),
-                fileType: "pdf",
-                teacherName: teacherName || null,
-                academicYear: academicYear ? Number(academicYear) : 1,
-                subjectId: subject.id,
-                authorId: adminUser.id,
-                status: (status as any) || "APPROVED",
-              },
+            let adminUser = await prisma.user.findFirst({
+              where: { role: "ADMIN" },
             });
+            if (!adminUser) {
+              adminUser = await prisma.user.findFirst();
+            }
+
+            if (adminUser) {
+              await prisma.studyMaterial.create({
+                data: {
+                  title,
+                  description: description || null,
+                  materialType: (type as any) || "LECTURE",
+                  fileUrl: fileUrl || "/uploads/sample-material.pdf",
+                  fileName: fileName || `${title.replace(/\s+/g, "_")}.pdf`,
+                  fileSize: Math.round((fileSizeMb || 3.5) * 1024 * 1024),
+                  fileType: "pdf",
+                  teacherName: teacherName || null,
+                  academicYear: academicYear ? Number(academicYear) : 1,
+                  subjectId: subject.id,
+                  authorId: adminUser.id,
+                  status: (status as any) || "APPROVED",
+                },
+              });
+            }
           }
         }
+      } catch {
+        markDbOffline();
       }
-    } catch {
-      // In-memory fallback is active
     }
 
     return NextResponse.json({ success: true, material: newMaterial }, { status: 201 });
@@ -320,33 +248,29 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { id, status, rejectionReason, title, subjectName, teacherName, type } = body;
 
-    // In-memory update
-    MOCK_ADMIN_MATERIALS = MOCK_ADMIN_MATERIALS.map((m) => {
-      if (m.id !== id) return m;
-      return {
-        ...m,
-        status: status || m.status,
-        rejectionReason: rejectionReason !== undefined ? rejectionReason : m.rejectionReason,
-        title: title || m.title,
-        subjectName: subjectName || m.subjectName,
-        teacherName: teacherName || m.teacherName,
-        type: type || m.type,
-      };
-    });
+    // Unified store da yangilash
+    if (status) {
+      updateMaterialStatusInStore(id, status, rejectionReason);
+    }
+    if (title || subjectName || teacherName || type) {
+      updateMaterialDataInStore(id, { title, subjectName, teacherName, type });
+    }
 
-    try {
-      const data: any = {};
-      if (status) data.status = status;
-      if (title) data.title = title;
-      if (teacherName) data.teacherName = teacherName;
-      if (type) data.materialType = type;
+    if (await isDbAvailable()) {
+      try {
+        const data: any = {};
+        if (status) data.status = status;
+        if (title) data.title = title;
+        if (teacherName) data.teacherName = teacherName;
+        if (type) data.materialType = type;
 
-      await prisma.studyMaterial.update({
-        where: { id },
-        data,
-      });
-    } catch {
-      // ignore DB fallback
+        await prisma.studyMaterial.update({
+          where: { id },
+          data,
+        });
+      } catch {
+        markDbOffline();
+      }
     }
 
     return NextResponse.json({ success: true, id, status, rejectionReason });
@@ -362,14 +286,16 @@ export async function DELETE(req: Request) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID talab qilinadi" }, { status: 400 });
 
-    MOCK_ADMIN_MATERIALS = MOCK_ADMIN_MATERIALS.filter((m) => m.id !== id);
+    deleteMaterialFromStore(id);
 
-    try {
-      await prisma.studyMaterial.delete({
-        where: { id },
-      });
-    } catch {
-      // In-memory fallback
+    if (await isDbAvailable()) {
+      try {
+        await prisma.studyMaterial.delete({
+          where: { id },
+        });
+      } catch {
+        markDbOffline();
+      }
     }
 
     return NextResponse.json({ success: true, id });
