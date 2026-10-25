@@ -1,0 +1,306 @@
+[
+  {
+    "id": "mat-sit-6-amaliy",
+    "title": "SIT 6-amaliy mashg'ulot",
+    "description": "TATU 2-kurs talabalari uchun SIT (Sanoat axborot tizimlari) bo'yicha 6-amaliy mashg'ulot ko'rsatmasi va topshiriqlari.",
+    "materialType": "LECTURE",
+    "fileUrl": "/uploads/SIT_6-amaliy_mashg_ulot.pdf",
+    "fileName": "SIT_6-amaliy_mashg_ulot.pdf",
+    "fileSize": 102400,
+    "fileSizeMb": 0.1,
+    "fileType": "pdf",
+    "teacherName": "srdfgh",
+    "academicYear": 2,
+    "downloadsCount": 12,
+    "viewsCount": 42,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 5,
+    "reviewsCount": 3,
+    "createdAt": "2026-10-25T12:16:00.610Z",
+    "subject": {
+      "id": "sub-esrdgf",
+      "name": "esrdgf",
+      "faculty": {
+        "id": "fac-tatu-dit",
+        "name": "Dasturiy injiniring",
+        "university": {
+          "id": "uni-tatu",
+          "name": "TATU"
+        }
+      }
+    },
+    "author": {
+      "id": "admin-official",
+      "name": "Admin (Rasmiy)",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-kiber-2026",
+    "title": "Kiberxavfsizlik Asoslari - Darslik 2026",
+    "description": "Tizim xavfsizligi va kriptografiya asoslari boyicha yangi qollanma.",
+    "materialType": "BOOK",
+    "fileUrl": "/uploads/kiber.pdf",
+    "fileName": "Kiberxavfsizlik_Asoslari_2026.pdf",
+    "fileSize": 3670016,
+    "fileSizeMb": 3.5,
+    "fileType": "pdf",
+    "teacherName": "Prof. Karimov",
+    "academicYear": 3,
+    "downloadsCount": 34,
+    "viewsCount": 110,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 5,
+    "reviewsCount": 4,
+    "createdAt": "2026-10-25T12:16:00.610Z",
+    "subject": {
+      "id": "sub-kiber",
+      "name": "Kiberxavfsizlik",
+      "faculty": {
+        "id": "fac-kiber-tatu",
+        "name": "Kiberxavfsizlik",
+        "university": {
+          "id": "uni-tatu",
+          "name": "TATU"
+        }
+      }
+    },
+    "author": {
+      "id": "admin-platform",
+      "name": "Admin (Rasmiy)",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-mod-1",
+    "title": "Algoritmlar va ma'lumotlar tuzilmasi - Ma'ruzalar matni",
+    "description": "TATU Dasturiy injiniring fakulteti 2-kurs talabalari uchun saralash, qidiruv va daraxtlar bo'yicha to'liq ma'ruza.",
+    "materialType": "LECTURE",
+    "fileUrl": "/uploads/mock-algo.pdf",
+    "fileName": "Algorithms_Lectures_TATU.pdf",
+    "fileSize": 4200000,
+    "fileSizeMb": 4.2,
+    "fileType": "pdf",
+    "teacherName": "Prof. S. Rahmatov",
+    "academicYear": 2,
+    "downloadsCount": 148,
+    "viewsCount": 620,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 4.9,
+    "reviewsCount": 18,
+    "createdAt": "2026-10-25T10:16:00.610Z",
+    "subject": {
+      "id": "sub-1",
+      "name": "Algoritmlar va ma'lumotlar tuzilmasi",
+      "faculty": {
+        "id": "fac-1",
+        "name": "Dasturiy injiniring",
+        "university": {
+          "id": "uni-tatu",
+          "name": "TATU"
+        }
+      }
+    },
+    "author": {
+      "id": "usr-1",
+      "name": "Jamshid Qodirov",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-mod-2",
+    "title": "Sun'iy intellekt va neyron tarmoqlar - Oraliq nazorat savollari",
+    "description": "O'zMU Amaliy matematika fakulteti uchun 40 ta nazorat savollari va qisqacha javoblar konspekti.",
+    "materialType": "EXAM_QUESTIONS",
+    "fileUrl": "/uploads/mock-ai-exam.pdf",
+    "fileName": "AI_Exam_Questions_OzMU.pdf",
+    "fileSize": 2100000,
+    "fileSizeMb": 2.1,
+    "fileType": "pdf",
+    "teacherName": "Akademik X. Nurmatov",
+    "academicYear": 4,
+    "downloadsCount": 95,
+    "viewsCount": 380,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 4.8,
+    "reviewsCount": 12,
+    "createdAt": "2026-10-25T07:16:00.610Z",
+    "subject": {
+      "id": "sub-2",
+      "name": "Mashinali o'rganish (Machine Learning)",
+      "faculty": {
+        "id": "fac-2",
+        "name": "Amaliy matematika",
+        "university": {
+          "id": "uni-ozmu",
+          "name": "O'zMU"
+        }
+      }
+    },
+    "author": {
+      "id": "usr-2",
+      "name": "Zuhra Yusupova",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-mod-3",
+    "title": "Web dasturlash (React & Next.js) - Taqdimot slaydlari",
+    "description": "Zamonaviy veb-ishlab chiqish, komponentlar arxitekturasi, server components va SSR bo'yicha slaydlar to'plami.",
+    "materialType": "SLIDES",
+    "fileUrl": "/uploads/mock-web.pptx",
+    "fileName": "Nextjs_Architecture_Slides.pptx",
+    "fileSize": 8400000,
+    "fileSizeMb": 8.4,
+    "fileType": "pptx",
+    "teacherName": "Katta o'qituvchi B. Saidov",
+    "academicYear": 3,
+    "downloadsCount": 215,
+    "viewsCount": 890,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 5,
+    "reviewsCount": 26,
+    "createdAt": "2026-10-25T04:16:00.610Z",
+    "subject": {
+      "id": "sub-3",
+      "name": "Web dasturlash (React & Next.js)",
+      "faculty": {
+        "id": "fac-1",
+        "name": "Dasturiy injiniring",
+        "university": {
+          "id": "uni-tatu",
+          "name": "TATU"
+        }
+      }
+    },
+    "author": {
+      "id": "usr-3",
+      "name": "Farrux Muxtorov",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-mod-4",
+    "title": "Kiberxavfsizlik asoslari bo'yicha laboratoriya ishlari to'plami (Lab 1-6)",
+    "description": "Simmetrik va asimmetrik shifrlash (RSA, AES) algoritmlarini amalda qo'llash bo'yicha laboratoriya metodik qo'llanmasi.",
+    "materialType": "LAB_WORK",
+    "fileUrl": "/uploads/cyber-lab.zip",
+    "fileName": "Crypto_Lab_Guide.zip",
+    "fileSize": 12800000,
+    "fileSizeMb": 12.8,
+    "fileType": "zip",
+    "teacherName": "Dots. A. Karimov",
+    "academicYear": 3,
+    "downloadsCount": 160,
+    "viewsCount": 510,
+    "status": "PENDING",
+    "rejectionReason": null,
+    "avgRating": 4.7,
+    "reviewsCount": 15,
+    "createdAt": "2026-10-25T00:16:00.610Z",
+    "subject": {
+      "id": "sub-4",
+      "name": "Kriptografiya asoslari",
+      "faculty": {
+        "id": "fac-3",
+        "name": "Kiberxavfsizlik",
+        "university": {
+          "id": "uni-inha",
+          "name": "INHA"
+        }
+      }
+    },
+    "author": {
+      "id": "usr-4",
+      "name": "Rustam Aliyev",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-mod-5",
+    "title": "Oliy matematika 1-semestr testlar va yechimlar bazasi",
+    "description": "ToshDTU muhandislik yo'nalishlari uchun differensial va integral hisob bo'yicha 200 ta test savollari va javoblar kaliti.",
+    "materialType": "TESTS",
+    "fileUrl": "/uploads/math-solutions.pdf",
+    "fileName": "Math_Tests_Solutions.pdf",
+    "fileSize": 5100000,
+    "fileSizeMb": 5.1,
+    "fileType": "pdf",
+    "teacherName": "Dots. M. Saidov",
+    "academicYear": 1,
+    "downloadsCount": 310,
+    "viewsCount": 1240,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 4.9,
+    "reviewsCount": 34,
+    "createdAt": "2026-10-09T12:16:00.610Z",
+    "subject": {
+      "id": "sub-5",
+      "name": "Oliy matematika",
+      "faculty": {
+        "id": "fac-4",
+        "name": "Mashinasozlik",
+        "university": {
+          "id": "uni-toshdtu",
+          "name": "ToshDTU"
+        }
+      }
+    },
+    "author": {
+      "id": "usr-5",
+      "name": "Doniyor Yoqubov",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-mod-6",
+    "title": "Iqtisodiy tahlil va ekonometrika oraliq nazorat savollari",
+    "description": "TDIU Iqtisodiyot fakulteti oraliq nazorat imtihoni savollari.",
+    "materialType": "EXAM_QUESTIONS",
+    "fileUrl": "/uploads/bad-scan.pdf",
+    "fileName": "Ekonometrika_Nazorat.pdf",
+    "fileSize": 1800000,
+    "fileSizeMb": 1.8,
+    "fileType": "pdf",
+    "teacherName": "Dots. F. Yo'ldoshev",
+    "academicYear": 2,
+    "downloadsCount": 12,
+    "viewsCount": 45,
+    "status": "REJECTED",
+    "rejectionReason": "Fayl skaneri juda xira va o'qib bo'lmaydi. Iltimos, aniq nusxasini qayta yuklang.",
+    "avgRating": 3.5,
+    "reviewsCount": 2,
+    "createdAt": "2026-10-07T12:16:00.610Z",
+    "subject": {
+      "id": "sub-6",
+      "name": "Iqtisodiy tahlil",
+      "faculty": {
+        "id": "fac-5",
+        "name": "Iqtisodiyot",
+        "university": {
+          "id": "uni-tdiu",
+          "name": "TDIU"
+        }
+      }
+    },
+    "author": {
+      "id": "usr-6",
+      "name": "Madina Karimova",
+      "isVerified": false,
+      "avatarUrl": null
+    }
+  }
+]

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { isDbAvailable, markDbOffline } from "@/lib/dbCheck";
@@ -123,18 +125,63 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const title = body.title;
-    const subjectName = body.subjectName || body.subject;
-    const universityName = body.universityName || body.university;
-    const teacherName = body.teacherName || body.author || "Kafedra o'qituvchisi";
-    const type = body.type || body.materialType || "LECTURE";
-    const fileUrl = body.fileUrl || "/uploads/sample-material.pdf";
-    const fileName = body.fileName || (title ? `${String(title).replace(/\s+/g, "_")}.pdf` : "material.pdf");
-    const fileSizeMb = body.fileSizeMb ? Number(body.fileSizeMb) : 3.5;
-    const academicYear = body.academicYear ? Number(body.academicYear) : 1;
-    const description = body.description || "";
-    const status = body.status || "APPROVED";
+    const contentType = req.headers.get("content-type") || "";
+    let title = "";
+    let subjectName = "";
+    let universityName = "";
+    let teacherName = "Kafedra o'qituvchisi";
+    let type = "LECTURE";
+    let fileUrl = "/uploads/sample-material.pdf";
+    let fileName = "";
+    let fileSizeMb = 3.5;
+    let academicYear = 1;
+    let description = "";
+    let status = "APPROVED";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      title = (formData.get("title") as string) || "";
+      subjectName = (formData.get("subjectName") as string) || (formData.get("subject") as string) || "";
+      universityName = (formData.get("universityName") as string) || (formData.get("university") as string) || "";
+      teacherName = (formData.get("teacherName") as string) || (formData.get("author") as string) || "Kafedra o'qituvchisi";
+      type = (formData.get("type") as string) || (formData.get("materialType") as string) || "LECTURE";
+      academicYear = Number(formData.get("academicYear")) || 1;
+      description = (formData.get("description") as string) || "";
+      status = (formData.get("status") as string) || "APPROVED";
+
+      const file = formData.get("file") as File | null;
+      if (file && typeof file === "object" && file.size > 0) {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        fileName = file.name;
+        fileSizeMb = Number((file.size / (1024 * 1024)).toFixed(1));
+        const safeName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const filePath = path.join(uploadDir, safeName);
+        fs.writeFileSync(filePath, buffer);
+        fileUrl = `/uploads/${safeName}`;
+      } else {
+        fileName = (formData.get("fileName") as string) || (title ? `${String(title).replace(/\s+/g, "_")}.pdf` : "material.pdf");
+        fileUrl = (formData.get("fileUrl") as string) || "/uploads/sample-material.pdf";
+        fileSizeMb = Number(formData.get("fileSizeMb")) || 3.5;
+      }
+    } else {
+      const body = await req.json();
+      title = body.title;
+      subjectName = body.subjectName || body.subject;
+      universityName = body.universityName || body.university;
+      teacherName = body.teacherName || body.author || "Kafedra o'qituvchisi";
+      type = body.type || body.materialType || "LECTURE";
+      fileUrl = body.fileUrl || "/uploads/sample-material.pdf";
+      fileName = body.fileName || (title ? `${String(title).replace(/\s+/g, "_")}.pdf` : "material.pdf");
+      fileSizeMb = body.fileSizeMb ? Number(body.fileSizeMb) : 3.5;
+      academicYear = body.academicYear ? Number(body.academicYear) : 1;
+      description = body.description || "";
+      status = body.status || "APPROVED";
+    }
 
     if (!title || !subjectName || !universityName) {
       return NextResponse.json(
@@ -155,7 +202,7 @@ export async function POST(req: Request) {
       fileSizeMb: fileSizeMb ? Number(fileSizeMb) : 3.5,
       academicYear: academicYear ? Number(academicYear) : 1,
       description,
-      status: status || "APPROVED",
+      status: (status as "APPROVED" | "PENDING") || "APPROVED",
       uploaderName: "Admin (Rasmiy)",
     });
 

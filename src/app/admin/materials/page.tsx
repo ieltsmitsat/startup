@@ -56,6 +56,7 @@ function MaterialsModerationContent() {
   // Yangi Material Yuklash Modali
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadSubject, setUploadSubject] = useState("");
   const [uploadUniversity, setUploadUniversity] = useState("TATU");
@@ -161,23 +162,42 @@ function MaterialsModerationContent() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/admin/materials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: uploadTitle,
-          subjectName: uploadSubject,
-          universityName: uploadUniversity,
-          teacherName: uploadTeacher || "Kafedra o'qituvchisi",
-          type: uploadType,
-          academicYear: uploadYear,
-          fileName: uploadFileName || `${uploadTitle.replace(/\s+/g, "_")}.pdf`,
-          fileSizeMb: uploadFileSizeMb,
-          fileUrl: uploadFileUrl,
-          status: uploadStatus,
-          description: uploadDescription,
-        }),
-      });
+      let res: Response;
+      if (uploadFile) {
+        const formData = new FormData();
+        formData.append("file", uploadFile);
+        formData.append("title", uploadTitle);
+        formData.append("subjectName", uploadSubject);
+        formData.append("universityName", uploadUniversity);
+        formData.append("teacherName", uploadTeacher || "Kafedra o'qituvchisi");
+        formData.append("type", uploadType);
+        formData.append("academicYear", String(uploadYear));
+        formData.append("status", uploadStatus);
+        formData.append("description", uploadDescription);
+
+        res = await fetch("/api/admin/materials", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        res = await fetch("/api/admin/materials", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: uploadTitle,
+            subjectName: uploadSubject,
+            universityName: uploadUniversity,
+            teacherName: uploadTeacher || "Kafedra o'qituvchisi",
+            type: uploadType,
+            academicYear: uploadYear,
+            fileName: uploadFileName || `${uploadTitle.replace(/\s+/g, "_")}.pdf`,
+            fileSizeMb: uploadFileSizeMb,
+            fileUrl: uploadFileUrl,
+            status: uploadStatus,
+            description: uploadDescription,
+          }),
+        });
+      }
 
       if (res.ok) {
         const data = await res.json();
@@ -187,6 +207,7 @@ function MaterialsModerationContent() {
         showToast("Yangi material muvaffaqiyatli yuklandi va bazaga qo'shildi!");
         setIsUploadModalOpen(false);
         // Reset form
+        setUploadFile(null);
         setUploadTitle("");
         setUploadSubject("");
         setUploadTeacher("");
@@ -1109,6 +1130,7 @@ function MaterialsModerationContent() {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
+                        setUploadFile(file);
                         setUploadFileName(file.name);
                         setUploadFileSizeMb(Number((file.size / (1024 * 1024)).toFixed(1)));
                         setUploadFileUrl(`/uploads/${file.name}`);

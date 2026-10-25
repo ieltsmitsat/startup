@@ -1,8 +1,11 @@
+import fs from "fs";
+import path from "path";
+
 export interface UnifiedMaterial {
   id: string;
   title: string;
   description: string;
-  materialType: "LECTURE" | "SLIDES" | "EXAM_QUESTIONS" | "LAB_WORK" | "TESTS" | "OTHER";
+  materialType: "LECTURE" | "SLIDES" | "EXAM_QUESTIONS" | "LAB_WORK" | "TESTS" | "OTHER" | "BOOK";
   fileUrl: string;
   fileName: string;
   fileSize: number; // baytlarda
@@ -38,6 +41,76 @@ export interface UnifiedMaterial {
 }
 
 export const INITIAL_MATERIALS: UnifiedMaterial[] = [
+  {
+    id: "mat-sit-6-amaliy",
+    title: "SIT 6-amaliy mashg'ulot",
+    description: "TATU 2-kurs talabalari uchun SIT (Sanoat axborot tizimlari) bo'yicha 6-amaliy mashg'ulot ko'rsatmasi va topshiriqlari.",
+    materialType: "LECTURE",
+    fileUrl: "/uploads/SIT_6-amaliy_mashg_ulot.pdf",
+    fileName: "SIT_6-amaliy_mashg_ulot.pdf",
+    fileSize: 102400,
+    fileSizeMb: 0.1,
+    fileType: "pdf",
+    teacherName: "srdfgh",
+    academicYear: 2,
+    downloadsCount: 12,
+    viewsCount: 42,
+    status: "APPROVED",
+    rejectionReason: null,
+    avgRating: 5.0,
+    reviewsCount: 3,
+    createdAt: new Date().toISOString(),
+    subject: {
+      id: "sub-esrdgf",
+      name: "esrdgf",
+      faculty: {
+        id: "fac-tatu-dit",
+        name: "Dasturiy injiniring",
+        university: { id: "uni-tatu", name: "TATU" },
+      },
+    },
+    author: {
+      id: "admin-official",
+      name: "Admin (Rasmiy)",
+      isVerified: true,
+      avatarUrl: null,
+    },
+  },
+  {
+    id: "mat-kiber-2026",
+    title: "Kiberxavfsizlik Asoslari - Darslik 2026",
+    description: "Tizim xavfsizligi va kriptografiya asoslari boyicha yangi qollanma.",
+    materialType: "BOOK",
+    fileUrl: "/uploads/kiber.pdf",
+    fileName: "Kiberxavfsizlik_Asoslari_2026.pdf",
+    fileSize: 3670016,
+    fileSizeMb: 3.5,
+    fileType: "pdf",
+    teacherName: "Prof. Karimov",
+    academicYear: 3,
+    downloadsCount: 34,
+    viewsCount: 110,
+    status: "APPROVED",
+    rejectionReason: null,
+    avgRating: 5.0,
+    reviewsCount: 4,
+    createdAt: new Date().toISOString(),
+    subject: {
+      id: "sub-kiber",
+      name: "Kiberxavfsizlik",
+      faculty: {
+        id: "fac-kiber-tatu",
+        name: "Kiberxavfsizlik",
+        university: { id: "uni-tatu", name: "TATU" },
+      },
+    },
+    author: {
+      id: "admin-platform",
+      name: "Admin (Rasmiy)",
+      isVerified: true,
+      avatarUrl: null,
+    },
+  },
   {
     id: "mat-mod-1",
     title: "Algoritmlar va ma'lumotlar tuzilmasi - Ma'ruzalar matni",
@@ -250,18 +323,41 @@ export const INITIAL_MATERIALS: UnifiedMaterial[] = [
   },
 ];
 
-// Next.js hot reload / process memory doirasida global yagona saqlash joyi
-const globalStore = globalThis as unknown as { unifiedMaterials?: UnifiedMaterial[] };
+const DB_FILE_PATH = path.join(process.cwd(), "src", "data", "materials-db.json");
 
-if (!globalStore.unifiedMaterials) {
-  globalStore.unifiedMaterials = [...INITIAL_MATERIALS];
+function readStoreFromDisk(): UnifiedMaterial[] {
+  try {
+    if (fs.existsSync(DB_FILE_PATH)) {
+      const raw = fs.readFileSync(DB_FILE_PATH, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error("Error reading materials-db.json:", e);
+  }
+  writeStoreToDisk(INITIAL_MATERIALS);
+  return [...INITIAL_MATERIALS];
+}
+
+function writeStoreToDisk(materials: UnifiedMaterial[]) {
+  try {
+    const dir = path.dirname(DB_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE_PATH, JSON.stringify(materials, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Error writing materials-db.json:", e);
+  }
 }
 
 /**
- * Barcha materiallarni olish (Admin panel uchun to'liq ro'yxat)
+ * Barcha materiallarni olish (Admin panel va Public platforma uchun doimiy sinxron ro'yxat)
  */
 export function getAllMaterials(): UnifiedMaterial[] {
-  return globalStore.unifiedMaterials || [];
+  return readStoreFromDisk();
 }
 
 /**
@@ -352,7 +448,7 @@ export function addMaterialToStore(data: {
   status?: "APPROVED" | "PENDING";
   uploaderName?: string;
 }): UnifiedMaterial {
-  const store = globalStore.unifiedMaterials || [];
+  const store = readStoreFromDisk();
 
   const sizeMb = data.fileSizeMb ? Number(data.fileSizeMb) : 3.5;
   const ext = (data.fileName?.split(".").pop() || "pdf").toLowerCase();
@@ -398,7 +494,7 @@ export function addMaterialToStore(data: {
   };
 
   store.unshift(newMat);
-  globalStore.unifiedMaterials = store;
+  writeStoreToDisk(store);
   return newMat;
 }
 
@@ -410,8 +506,8 @@ export function updateMaterialStatusInStore(
   status: "PENDING" | "APPROVED" | "REJECTED",
   rejectionReason?: string | null
 ) {
-  const store = globalStore.unifiedMaterials || [];
-  globalStore.unifiedMaterials = store.map((m) => {
+  const store = readStoreFromDisk();
+  const updated = store.map((m) => {
     if (m.id !== id) return m;
     return {
       ...m,
@@ -419,6 +515,7 @@ export function updateMaterialStatusInStore(
       rejectionReason: rejectionReason !== undefined ? rejectionReason : m.rejectionReason,
     };
   });
+  writeStoreToDisk(updated);
 }
 
 /**
@@ -433,8 +530,8 @@ export function updateMaterialDataInStore(
     type?: string;
   }
 ) {
-  const store = globalStore.unifiedMaterials || [];
-  globalStore.unifiedMaterials = store.map((m) => {
+  const store = readStoreFromDisk();
+  const updated = store.map((m) => {
     if (m.id !== id) return m;
     return {
       ...m,
@@ -447,12 +544,14 @@ export function updateMaterialDataInStore(
       },
     };
   });
+  writeStoreToDisk(updated);
 }
 
 /**
  * O'chirish
  */
 export function deleteMaterialFromStore(id: string) {
-  const store = globalStore.unifiedMaterials || [];
-  globalStore.unifiedMaterials = store.filter((m) => m.id !== id);
+  const store = readStoreFromDisk();
+  const updated = store.filter((m) => m.id !== id);
+  writeStoreToDisk(updated);
 }
