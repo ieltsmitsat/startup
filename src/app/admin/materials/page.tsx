@@ -874,7 +874,7 @@ function MaterialsModerationContent() {
                   <span>Fayl formati va yaxlitligi: Toza</span>
                 </span>
                 <a
-                  href={inspectingItem.fileUrl}
+                  href={`/api/study/materials/${inspectingItem.id}/download`}
                   download
                   className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-bold"
                 >

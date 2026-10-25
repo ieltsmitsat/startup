@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { isDbAvailable } from "@/lib/dbCheck";
+import { getAllMaterials } from "@/lib/materialsStore";
 
 export const dynamic = "force-dynamic";
 
@@ -11,69 +13,90 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const material = await prisma.studyMaterial.findUnique({
-      where: { id },
-      include: {
-        subject: {
+    let material: any = null;
+
+    if (await isDbAvailable()) {
+      try {
+        material = await prisma.studyMaterial.findUnique({
+          where: { id },
           include: {
-            faculty: {
+            subject: {
               include: {
-                university: true,
+                faculty: {
+                  include: {
+                    university: true,
+                  },
+                },
               },
             },
-          },
-        },
-        author: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-            isVerified: true,
-            university: { select: { name: true } },
-          },
-        },
-        reviews: {
-          include: {
-            user: {
+            author: {
               select: {
                 id: true,
                 name: true,
                 avatarUrl: true,
                 isVerified: true,
+                university: { select: { name: true } },
               },
             },
+            reviews: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    avatarUrl: true,
+                    isVerified: true,
+                  },
+                },
+              },
+              orderBy: { createdAt: "desc" },
+            },
           },
-          orderBy: { createdAt: "desc" },
-        },
-      },
-    });
+        });
 
-    if (!material) {
-      return NextResponse.json(
-        { error: "Material topilmadi" },
-        { status: 404 }
-      );
+        if (material) {
+          await prisma.studyMaterial.update({
+            where: { id },
+            data: { viewsCount: { increment: 1 } },
+          });
+
+          const avgRating =
+            material.reviews.length > 0
+              ? material.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) /
+                material.reviews.length
+              : 0;
+
+          return NextResponse.json({
+            material: {
+              ...material,
+              avgRating: Number(avgRating.toFixed(1)),
+              reviewsCount: material.reviews.length,
+            },
+          });
+        }
+      } catch (err) {
+        // fallback to in-memory/disk store
+      }
     }
 
-    // Ko'rishlar sonini oshiramiz
-    await prisma.studyMaterial.update({
-      where: { id },
-      data: { viewsCount: { increment: 1 } },
-    });
+    // Fallback to unified materials store
+    const all = getAllMaterials();
+    const found = all.find((m) => m.id === id);
+    if (found) {
+      return NextResponse.json({
+        material: {
+          ...found,
+          avgRating: found.avgRating || 5.0,
+          reviewsCount: found.reviewsCount || 1,
+          reviews: [],
+        },
+      });
+    }
 
-    const avgRating =
-      material.reviews.length > 0
-        ? material.reviews.reduce((acc, r) => acc + r.rating, 0) /
-          material.reviews.length
-        : 0;
-
-    return NextResponse.json({
-      material: {
-        ...material,
-        avgRating: Number(avgRating.toFixed(1)),
-        reviewsCount: material.reviews.length,
-      },
-    });
+    return NextResponse.json(
+      { error: "Material topilmadi" },
+      { status: 404 }
+    );
   } catch (error) {
     console.error("Material detail fetch error:", error);
     return NextResponse.json(

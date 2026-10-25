@@ -1,5 +1,81 @@
 [
   {
+    "id": "mat-1792930884637",
+    "title": "Loyha",
+    "description": "TATU talabalari uchun dsffgh fani bo'yicha rasmiy o'quv resursi.",
+    "materialType": "LECTURE",
+    "fileUrl": "/uploads/Loyha.docx",
+    "fileName": "Loyha.docx",
+    "fileSize": 3670016,
+    "fileSizeMb": 3.5,
+    "fileType": "docx",
+    "teacherName": "Kafedra o'qituvchisi",
+    "academicYear": 2,
+    "downloadsCount": 0,
+    "viewsCount": 1,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 5,
+    "reviewsCount": 1,
+    "createdAt": "2026-10-25T12:21:24.637Z",
+    "subject": {
+      "id": "sub-1792930884637",
+      "name": "dsffgh",
+      "faculty": {
+        "id": "fac-1792930884637",
+        "name": "Asosiy Fakultet",
+        "university": {
+          "id": "uni-tatu",
+          "name": "TATU"
+        }
+      }
+    },
+    "author": {
+      "id": "admin-platform",
+      "name": "Admin (Rasmiy)",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
+    "id": "mat-1792930755005",
+    "title": "TEAMMATE_Loyiha_Pasporti",
+    "description": "adfdgfh",
+    "materialType": "LECTURE",
+    "fileUrl": "/uploads/TEAMMATE_Loyiha_Pasporti.docx",
+    "fileName": "TEAMMATE_Loyiha_Pasporti.docx",
+    "fileSize": 3670016,
+    "fileSizeMb": 3.5,
+    "fileType": "docx",
+    "teacherName": "adsfb",
+    "academicYear": 2,
+    "downloadsCount": 0,
+    "viewsCount": 1,
+    "status": "APPROVED",
+    "rejectionReason": null,
+    "avgRating": 5,
+    "reviewsCount": 1,
+    "createdAt": "2026-10-25T12:19:15.005Z",
+    "subject": {
+      "id": "sub-1792930755005",
+      "name": "adsfdf",
+      "faculty": {
+        "id": "fac-1792930755005",
+        "name": "Asosiy Fakultet",
+        "university": {
+          "id": "uni-tatu",
+          "name": "TATU"
+        }
+      }
+    },
+    "author": {
+      "id": "admin-platform",
+      "name": "Admin (Rasmiy)",
+      "isVerified": true,
+      "avatarUrl": null
+    }
+  },
+  {
     "id": "mat-sit-6-amaliy",
     "title": "SIT 6-amaliy mashg'ulot",
     "description": "TATU 2-kurs talabalari uchun SIT (Sanoat axborot tizimlari) bo'yicha 6-amaliy mashg'ulot ko'rsatmasi va topshiriqlari.",
@@ -203,7 +279,7 @@
     "academicYear": 3,
     "downloadsCount": 160,
     "viewsCount": 510,
-    "status": "PENDING",
+    "status": "APPROVED",
     "rejectionReason": null,
     "avgRating": 4.7,
     "reviewsCount": 15,

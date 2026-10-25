@@ -403,9 +403,9 @@ function StudyContent() {
                 </Link>
 
                 <a
-                  href={previewMaterial.fileUrl}
+                  href={`/api/study/materials/${previewMaterial.id}/download`}
                   download={previewMaterial.fileName}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Yuklab olish</span>

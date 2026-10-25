@@ -202,11 +202,9 @@ function MaterialDetailContent() {
           </div>
 
           <a
-            href={material.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/api/study/materials/${material.id}/download`}
             download={material.fileName}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base shadow-lg shadow-blue-500/25 transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
           >
             <Download className="w-5 h-5" />
             <span>Yuklab Olish</span>
