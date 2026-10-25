@@ -1,0 +1,332 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  EMPLOYER
+  MODERATOR
+  ADMIN
+}
+
+enum MaterialType {
+  LECTURE           // Ma'ruza
+  SLIDES            // Slayd
+  EXAM_QUESTIONS    // Imtihon savollari
+  LAB_WORK          // Laboratoriya ishi
+  TESTS             // Testlar
+  OTHER             // Boshqa
+}
+
+enum MaterialStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BookStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  REMOTE
+}
+
+enum ScholarshipCategory {
+  INTERNATIONAL
+  NATIONAL
+  UNIVERSITY
+}
+
+enum CommunityCategory {
+  UNIVERSITY_LIFE  // Universitet hayoti
+  IT_DEV           // IT va Dasturlash
+  STUDY_ABROAD     // Chet elda ta'lim
+  DORM_HOUSING     // Yotoqxona va ijara
+  GENERAL          // Umumiy suhbat
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  passwordHash     String?
+  role             Role      @default(STUDENT)
+  avatarUrl        String?
+  bio              String?
+  phone            String?
+  telegramUsername String?
+  githubUrl        String?
+  linkedinUrl      String?
+  isVerified       Boolean   @default(false)
+  verificationDoc  String?
+
+  // Akademik ma'lumotlar
+  universityId     String?
+  university       University? @relation(fields: [universityId], references: [id])
+  facultyId        String?
+  faculty          Faculty?    @relation(fields: [facultyId], references: [id])
+  major            String?     // Yo'nalish
+  academicYear     Int?        // Kurs: 1, 2, 3, 4, 5
+  skills           String[]    @default([])
+
+  // Aloqalar
+  materials        StudyMaterial[]
+  reviews          MaterialReview[]
+  books            Book[]
+  jobs             Job[]
+  teamUpProjects   TeamUpProject[]
+  teamUpRequests   TeamUpRequest[]
+  notifications    Notification[]
+  reports          Report[]
+
+  scholarships     Scholarship[]
+  communityPosts   CommunityPost[]
+  communityAnswers CommunityAnswer[]
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model University {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  city      String?
+  logoUrl   String?
+  faculties Faculty[]
+  users     User[]
+  createdAt DateTime  @default(now())
+}
+
+model Faculty {
+  id           String          @id @default(cuid())
+  name         String
+  slug         String
+  universityId String
+  university   University      @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  subjects     Subject[]
+  users        User[]
+  createdAt    DateTime        @default(now())
+
+  @@unique([universityId, slug])
+}
+
+model Subject {
+  id        String          @id @default(cuid())
+  name      String
+  code      String?
+  facultyId String
+  faculty   Faculty         @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  materials StudyMaterial[]
+  createdAt DateTime        @default(now())
+
+  @@unique([facultyId, name])
+}
+
+model StudyMaterial {
+  id             String          @id @default(cuid())
+  title          String
+  description    String?
+  materialType   MaterialType    @default(LECTURE)
+  fileUrl        String
+  fileName       String
+  fileSize       Int             // Baytlarda
+  fileType       String          // pdf, docx, pptx, zip
+  teacherName    String?
+  academicYear   Int?            // Qaysi kurs uchun
+
+  downloadsCount Int             @default(0)
+  viewsCount     Int             @default(0)
+  status         MaterialStatus  @default(APPROVED) // MVP da tasdiqlangan holatda chiqishi mumkin
+
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  reviews        MaterialReview[]
+  reports        Report[]
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([subjectId])
+  @@index([materialType])
+  @@index([title])
+}
+
+model MaterialReview {
+  id         String        @id @default(cuid())
+  rating     Int           // 1 dan 5 gacha
+  comment    String?
+  isHelpful  Boolean       @default(true)
+  
+  materialId String
+  material   StudyMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime      @default(now())
+
+  @@unique([materialId, userId])
+}
+
+model Book {
+  id           String     @id @default(cuid())
+  title        String
+  author       String
+  publishYear  Int?
+  condition    String     // "Yangi", "Yaxshi", "O'rtacha"
+  price        Float?     // Narxi (agar null bo'lsa tekin yoki almashtirish)
+  isExchange   Boolean    @default(false)
+  isFree       Boolean    @default(false)
+  imageUrl     String?
+  description  String?
+  status       BookStatus @default(AVAILABLE)
+
+  sellerId     String
+  seller       User       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Job {
+  id           String    @id @default(cuid())
+  title        String
+  companyName  String
+  jobType      JobType   @default(INTERNSHIP)
+  location     String?
+  isRemote     Boolean   @default(false)
+  salaryMin    Float?
+  salaryMax    Float?
+  description  String
+  requirements String[]  @default([])
+  applyUrl     String?
+  deadline     DateTime?
+
+  authorId     String
+  author       User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model TeamUpProject {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  neededRoles String[]        @default([]) // masalan: ["Frontend", "UI/UX", "Backend"]
+  status      String          @default("OPEN")
+
+  ownerId     String
+  owner       User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  requests    TeamUpRequest[]
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model TeamUpRequest {
+  id        String        @id @default(cuid())
+  message   String        // "Nega men?" motivi
+  status    String        @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  
+  projectId String
+  project   TeamUpProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime      @default(now())
+
+  @@unique([projectId, userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id         String         @id @default(cuid())
+  reason     String
+  details    String?
+  reporterId String
+  reporter   User           @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  materialId String?
+  material   StudyMaterial? @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  status     String         @default("PENDING") // PENDING, RESOLVED, DISMISSED
+  createdAt  DateTime       @default(now())
+}
+
+model Scholarship {
+  id           String              @id @default(cuid())
+  title        String
+  organization String
+  country      String?
+  category     ScholarshipCategory @default(INTERNATIONAL)
+  coverage     String              // "To'liq kontrakt + 1,200£/oy stipendiya"
+  degree       String?             // "Bakalavr", "Magistratura", "PhD", "Barchasi"
+  requirements String[]            @default([])
+  deadline     DateTime
+  officialUrl  String
+  imageUrl     String?
+  description  String
+
+  authorId     String?
+  author       User?               @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
+model CommunityPost {
+  id        String            @id @default(cuid())
+  title     String
+  content   String
+  category  CommunityCategory @default(GENERAL)
+  upvotes   Int               @default(0)
+  downvotes Int               @default(0)
+  tags      String[]          @default([])
+
+  authorId  String
+  author    User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  answers   CommunityAnswer[]
+
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model CommunityAnswer {
+  id         String        @id @default(cuid())
+  content    String
+  upvotes    Int           @default(0)
+  isAccepted Boolean       @default(false)
+
+  postId     String
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  authorId   String
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
